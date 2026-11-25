@@ -47,9 +47,11 @@ body {
   background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
 }
 
-:focus-visible {
-  outline: 2px solid var(--ripple-1);
-  outline-offset: 2px;
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--ripple-1);
+    outline-offset: 2px;
+  }
 }
 
 ::selection {

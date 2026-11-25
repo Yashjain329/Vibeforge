@@ -9,7 +9,9 @@ CodeMind turns any public GitHub repository into a **knowledge graph built by [G
 
 Built for **VibeForge 2026** (Open Innovation, Graphify track).
 
-![CodeMind answering "what happens if I change normalizeGraph?"](docs/screenshot-answer.png)
+**Live demo: https://codemind-henna.vercel.app**: paste any public GitHub repo, or open a prebuilt graph.
+
+![CodeMind on the live site: "What happens if I change the Signer class?" in pallets/itsdangerous](docs/screenshot-production.png)
 
 ## How it works
 

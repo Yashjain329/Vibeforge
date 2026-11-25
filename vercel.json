@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
   "functions": {
-    "api/graph.py": { "maxDuration": 300, "memory": 3009, "excludeFiles": "{node_modules/**,public/**,.next/**,tests/**,docs/**}" },
+    "api/graph.py": { "maxDuration": 300, "memory": 2048, "excludeFiles": "{node_modules/**,public/**,.next/**,tests/**,docs/**}" },
     "app/api/chat/route.ts": { "maxDuration": 120 }
   }
 }

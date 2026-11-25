@@ -41,6 +41,28 @@ This file records every prompt the team gave the AI coding assistant (Claude Cod
 - Tried to create a Git-connected Vercel project. Vercel couldn't see the repo because its GitHub App wasn't installed.
 - Asked the user to choose a deploy path. The user chose: install the Vercel GitHub App, so every push auto-deploys.
 
+## Prompt 4 — GitHub access for Vercel
+
+> Access given
+
+**AI actions:**
+- Retried the Git-linked project. Vercel's API returned `401 github_response_error`, meaning the Vercel account's GitHub login connection was broken.
+- Switched to deploying with the Vercel CLI, using a token stored as a proxy-injected network secret so it never appears in chat.
+
+## Prompt 5 — Vercel token
+
+> So I have created the token and named it Codemind
+
+**AI actions:**
+- Collected the token through the secure credential form and verified it (authenticated as the account owner).
+- Ran `vercel link` to create project `codemind`.
+- Set `Gemini`, `GEMINI_MODEL` and `VERCEL_SUPPORT_LARGE_FUNCTIONS`. The Gemini key was piped from the session environment and never printed.
+- The first deploy failed because the Hobby plan caps function memory at 2048 MB. Lowered it in `vercel.json` and redeployed: **READY** at https://codemind-henna.vercel.app.
+- Smoke-tested production:
+  - The Graphify function mapped `pallets/itsdangerous` from GitHub in 1.8 s (323 nodes, 639 edges).
+  - A browser end-to-end run had Gemini trace 45 dependents of `Signer`, with "high" risk shown both in chat and on the graph.
+- Fixed a double focus outline on the chat box, which a global CSS rule was causing.
+
 ---
 
 ## Build log (AI actions between prompts)
