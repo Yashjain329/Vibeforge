@@ -159,7 +159,7 @@ export default function ChatPanel({
         {status === "submitted" && <p className="mt-4 animate-pulse text-sm text-faded">Reading the graph…</p>}
         {error && (
           <div role="alert" className="mt-4 rounded-md border border-signal/50 bg-signal/10 p-3 text-sm text-[#FFD1CE]">
-            <p>Gemini didn&apos;t finish this answer: {error.message || "unknown error"}</p>
+            <p>The AI didn&apos;t finish this answer: {error.message || "unknown error"}</p>
             <button onClick={onRetry} className="mt-2 font-semibold text-paper underline underline-offset-4">
               Try again
             </button>

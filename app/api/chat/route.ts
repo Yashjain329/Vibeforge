@@ -1,20 +1,13 @@
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { convertToModelMessages, createUIMessageStreamResponse, streamText, toUIMessageStream, type UIMessage } from "ai";
 import { graphToolSchemas } from "@/lib/ai/graph-tools";
+import { createModel, NO_KEY_MESSAGE, providerOptions, resolveAiConfig } from "@/lib/ai/model";
 import { buildSystemPrompt, type ChatContext } from "@/lib/ai/prompt";
 
 export const maxDuration = 120;
 
-const MODEL = process.env.GEMINI_MODEL || "gemini-3.5-flash";
-
 export async function POST(req: Request) {
-  const apiKey = process.env.Gemini || process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-  if (!apiKey) {
-    return Response.json(
-      { error: "No Gemini API key configured. Set the `Gemini` (or GEMINI_API_KEY) environment variable." },
-      { status: 500 },
-    );
-  }
+  const ai = resolveAiConfig(process.env);
+  if (!ai) return Response.json({ error: NO_KEY_MESSAGE }, { status: 500 });
 
   let body: { messages?: UIMessage[]; context?: ChatContext };
   try {
@@ -26,15 +19,14 @@ export async function POST(req: Request) {
     return Response.json({ error: "`messages` must be an array" }, { status: 400 });
   }
 
-  const google = createGoogleGenerativeAI({ apiKey });
   // Tools have no `execute`: the browser runs them against the Graphify graph it holds
   // and posts results back, so the (potentially multi-MB) graph never needs to be uploaded.
   const result = streamText({
-    model: google(MODEL),
+    model: createModel(ai),
     system: buildSystemPrompt(body.context),
     messages: await convertToModelMessages(body.messages),
     tools: graphToolSchemas,
-    providerOptions: { google: { thinkingConfig: { thinkingLevel: "low" } } },
+    providerOptions: providerOptions(ai),
   });
 
   return createUIMessageStreamResponse({

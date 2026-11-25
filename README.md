@@ -84,8 +84,10 @@ npm run test:py   # repo URL parsing, safe tar extraction, graph trimming, repor
 
 | Variable | Purpose |
 |---|---|
-| `Gemini` / `GEMINI_API_KEY` | Gemini API key (required for chat) |
-| `GEMINI_MODEL` | Optional model override (default `gemini-3.5-flash`) |
+| `OPENROUTER_API_KEY` | OpenRouter key: preferred chat provider |
+| `OPENROUTER_MODEL` | Optional comma-separated model list; the first is primary and the rest are automatic fallbacks (default: free Nemotron 3 Ultra → Nemotron 3.5 Super → Gemma 4 31B) |
+| `Gemini` / `GEMINI_API_KEY` | Gemini key, used only when no OpenRouter key is set |
+| `GEMINI_MODEL` | Optional Gemini model (default `gemini-3.5-flash`) |
 | `GITHUB_TOKEN` | Optional, raises GitHub download rate limits |
 
 Limits: public repos, ≤ 60 MB tarball, ≤ 4000 source files; graphs over 9000 nodes keep code first.
@@ -107,6 +109,6 @@ PROMPTS.md                       Full AI prompt history (VibeForge rule §3)
 
 - **Next.js starter:** scaffolded with `create-next-app` (layout boilerplate, configs). All application code was written during the event.
 - **Graphify** (`graphifyy` on PyPI, Graphify-Labs/graphify): the knowledge-graph engine, used as a dependency and not modified.
-- **Libraries:** Vercel AI SDK + `@ai-sdk/google` (Gemini), `react-force-graph-2d`, `react-markdown`, Tailwind CSS, Zod, Vitest, pytest.
+- **Libraries:** Vercel AI SDK + `@openrouter/ai-sdk-provider` (OpenRouter) and `@ai-sdk/google` (Gemini fallback), `react-force-graph-2d`, `react-markdown`, Tailwind CSS, Zod, Vitest, pytest.
 - **Fonts:** Bricolage Grotesque, IBM Plex Sans, IBM Plex Mono (Google Fonts, OFL).
 - **AI assistance:** built with Claude Code (Anthropic) using the superpowers planning/TDD skills, frontend-design and Vercel deploy skills. Every prompt is in [PROMPTS.md](PROMPTS.md).

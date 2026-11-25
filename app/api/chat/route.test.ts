@@ -5,12 +5,13 @@ import { buildSystemPrompt } from "@/lib/ai/prompt";
 afterEach(() => vi.unstubAllEnvs());
 
 describe("POST /api/chat", () => {
-  it("returns a readable 500 when no Gemini key is configured", async () => {
+  it("returns a readable 500 when no AI key is configured", async () => {
     vi.stubEnv("Gemini", "");
     vi.stubEnv("GEMINI_API_KEY", "");
+    vi.stubEnv("OPENROUTER_API_KEY", "");
     const res = await POST(new Request("http://x/api/chat", { method: "POST", body: JSON.stringify({ messages: [] }) }));
     expect(res.status).toBe(500);
-    expect((await res.json()).error).toMatch(/Gemini API key/i);
+    expect((await res.json()).error).toMatch(/OPENROUTER_API_KEY/);
   });
 
   it("rejects a malformed body with 400", async () => {
