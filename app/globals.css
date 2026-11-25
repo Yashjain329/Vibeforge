@@ -1,26 +1,89 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --prussian: #0f3254;
+  --ink: #0a2540;
+  --ink-2: #0d2d4d;
+  --paper: #e9f0f7;
+  --faded: #7e9cbc;
+  --line: rgb(158 186 214 / 0.18);
+  --signal: #ff5e57;
+  --ripple-1: #ffb23f;
+  --ripple-2: #ffcf73;
+  --ripple-3: #ffe7a8;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-prussian: var(--prussian);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-paper: var(--paper);
+  --color-faded: var(--faded);
+  --color-line: var(--line);
+  --color-signal: var(--signal);
+  --color-ripple-1: var(--ripple-1);
+  --color-ripple-2: var(--ripple-2);
+  --color-ripple-3: var(--ripple-3);
+  --font-display: var(--font-display);
+  --font-sans: var(--font-plex);
+  --font-mono: var(--font-plex-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--prussian);
+  color: var(--paper);
+  font-family: var(--font-plex), system-ui, sans-serif;
 }
+
+/* cyanotype grid: the blueprint paper everything sits on */
+.blueprint {
+  background-color: var(--prussian);
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px),
+    linear-gradient(rgb(158 186 214 / 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(158 186 214 / 0.07) 1px, transparent 1px);
+  background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ripple-1);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--ripple-1);
+  color: var(--ink);
+}
+
+/* chat answer typography */
+.answer {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+.answer p { margin: 0.5em 0; }
+.answer h1, .answer h2, .answer h3 { font-family: var(--font-display); font-weight: 700; margin: 0.9em 0 0.3em; font-size: 1rem; }
+.answer strong { color: #fff; font-weight: 600; }
+.answer ul, .answer ol { margin: 0.4em 0; padding-left: 1.25em; }
+.answer ul { list-style: disc; }
+.answer ol { list-style: decimal; }
+.answer li { margin: 0.2em 0; }
+.answer li::marker { color: var(--faded); }
+.answer code { font-family: var(--font-plex-mono); font-size: 0.85em; background: rgb(255 255 255 / 0.07); padding: 0.1em 0.35em; border-radius: 4px; color: var(--ripple-3); }
+.answer pre { background: var(--ink); padding: 0.75em; border-radius: 6px; overflow-x: auto; }
+.answer pre code { background: none; padding: 0; }
+.answer table { border-collapse: collapse; font-size: 0.85em; margin: 0.5em 0; }
+.answer th, .answer td { border: 1px solid var(--line); padding: 0.25em 0.5em; text-align: left; }
+
+@keyframes ripple {
+  from { transform: scale(0.2); opacity: 0.9; }
+  to { transform: scale(1); opacity: 0; }
+}
+.ripple-ring { animation: ripple 3.2s cubic-bezier(0.2, 0.6, 0.3, 1) infinite; transform-origin: center; transform-box: fill-box; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ripple-ring { animation: none; opacity: 0.35; }
+}
+
+.scroll-thin { scrollbar-width: thin; scrollbar-color: rgb(126 156 188 / 0.4) transparent; }

@@ -33,6 +33,10 @@ describe("buildSystemPrompt", () => {
     expect(p).toContain("analyzeImpact");
   });
 
+  it("tells the model to report the risk level computed by the graph, not its own guess", () => {
+    expect(buildSystemPrompt(undefined)).toMatch(/use the `risk` value returned by analyzeImpact/i);
+  });
+
   it("works with no context", () => {
     expect(buildSystemPrompt(undefined)).toContain("CodeMind");
   });

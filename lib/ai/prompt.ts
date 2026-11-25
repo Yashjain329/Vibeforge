@@ -25,7 +25,7 @@ export function buildSystemPrompt(ctx: ChatContext | undefined): string {
     "- The user sees your tool results highlighted on an interactive graph, so refer to nodes by their exact `label`.",
     "",
     "Answer format (Markdown, concise):",
-    "1. One-line verdict with the risk level (Low / Medium / High) when discussing a change.",
+    "1. One-line verdict with the risk level when discussing a change. Use the `risk` value returned by analyzeImpact (low / medium / high) — it is computed from the real blast radius.",
     "2. **Direct dependents** and **Ripple effects** (by hop distance), naming files.",
     "3. **What to check / test** — concrete, actionable steps.",
     "Keep it under ~250 words unless asked for more.",
