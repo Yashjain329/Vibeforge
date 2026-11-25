@@ -32,6 +32,15 @@ This file records every prompt the team gave the AI coding assistant (Claude Cod
 - Confirmed that the `graphifyy` package is the Graphify-Labs/graphify project.
 - Planned a deeper Graphify integration: `GRAPH_REPORT.md` god-nodes and suggested questions now feed the chat.
 
+## Prompt 3 — Deploy
+
+> Approved , Deploy it
+
+**AI actions:**
+- Confirmed Vercel team access.
+- Tried to create a Git-connected Vercel project. Vercel couldn't see the repo because its GitHub App wasn't installed.
+- Asked the user to choose a deploy path. The user chose: install the Vercel GitHub App, so every push auto-deploys.
+
 ---
 
 ## Build log (AI actions between prompts)
