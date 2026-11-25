@@ -21,7 +21,7 @@ const val = (v: string | undefined) => (v && v.trim() ? v.trim() : undefined);
 
 /** Pick the AI provider from the environment: OpenRouter if configured, else Gemini, else null. */
 export function resolveAiConfig(env: Env): AiConfig | null {
-  const or = val(env.OPENROUTER_API_KEY);
+  const or = val(env.OPENROUTER_API_KEY) ?? val(env.OpenRouter);
   if (or) {
     const list = val(env.OPENROUTER_MODEL)?.split(",").map((s) => s.trim()).filter(Boolean);
     return { provider: "openrouter", apiKey: or, models: list?.length ? list : DEFAULT_OPENROUTER_MODELS };
@@ -46,4 +46,4 @@ export function providerOptions(c: AiConfig) {
 }
 
 export const NO_KEY_MESSAGE =
-  "No AI API key configured. Set OPENROUTER_API_KEY (or the `Gemini` / GEMINI_API_KEY variable) on the server.";
+  "No AI API key configured. Set OPENROUTER_API_KEY (or `OpenRouter`, or the `Gemini` / GEMINI_API_KEY variable) on the server.";
