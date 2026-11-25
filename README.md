@@ -1,36 +1,102 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CodeMind
 
-## Getting Started
+**Change one thing. See everything it touches.**
 
-First, run the development server:
+CodeMind turns any public GitHub repository into a **knowledge graph built by [Graphify](https://github.com/Graphify-Labs/graphify)**. You can then ask **Gemini** questions like *"what happens if I change this module?"*. Each answer comes in two forms:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **In chat:** a risk verdict, the direct dependents, the ripple effects by hop distance, and what to test.
+- **On the graph:** the changed node glows signal-red with blast-radius rings, and every dependent lights up in amber, fading with distance. Particles flow along the dependency edges.
+
+Built for **VibeForge 2026** (Open Innovation, Graphify track).
+
+![CodeMind answering "what happens if I change normalizeGraph?"](docs/screenshot-answer.png)
+
+## How it works
+
+```
+GitHub repo ──► api/graph.py (Python Vercel Function)
+                 ├─ downloads tarball (codeload.github.com)
+                 ├─ runs `graphify update` → graph.json + GRAPH_REPORT.md
+                 └─ trims graph, extracts god nodes / surprising links / suggested questions
+                         │
+                         ▼
+Browser holds the graph in a pure-TS GraphEngine (search · reverse-BFS impact · neighbors · path)
+                         │
+User question ──► /api/chat (Next.js, AI SDK + Gemini)
+                 Gemini plans and calls graph tools ──► executed IN THE BROWSER against the graph
+                 ◄── tool results stream back ──► Gemini writes the answer
+                         │
+                         ▼
+Chat answer  +  graph highlight (focus / depth / path) derived from the same tool results
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Why client-side tools?** A real repo's graph can be several MB. Instead of uploading it on every message, Gemini sends tool calls (`analyzeImpact`, `searchNodes`, `getNeighbors`, `findPath`), and the browser answers them from the graph it already holds. The server stays stateless, with no database, and the highlight on the graph comes from exactly the data Gemini reasoned over.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### How Graphify is used
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Graphify output | Where CodeMind uses it |
+|---|---|
+| `graph.json` nodes/edges (calls, imports, inherits, method, references…) | Every impact, path and neighbour query, plus the graph you see |
+| Communities (Leiden clustering) | Node colouring and "in <community>" context in the inspector |
+| `GRAPH_REPORT.md` god nodes | Grounding in Gemini's system prompt (core abstractions) |
+| `GRAPH_REPORT.md` surprising connections | Grounding in Gemini's system prompt |
+| `GRAPH_REPORT.md` suggested questions | Starter questions in the chat |
+| Graphify run on CodeMind's own source | The built-in "CodeMind itself" demo graph (dogfooding) |
 
-## Learn More
+## Run locally
 
-To learn more about Next.js, take a look at the following resources:
+Requirements: Node 22+, Python 3.11+.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm install
+pip install -r requirements.txt
+export Gemini=<your Gemini API key>   # or GEMINI_API_KEY
+npm run dev:api   # Python Graphify function on :8000
+npm run dev       # Next.js on :3000 (proxies /api/graph to :8000)
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Rebuild the demo graphs with Graphify:
 
-## Deploy on Vercel
+```bash
+python scripts/build_demo.py . codemind "CodeMind (this app)"
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Tests
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The tests were written first, test-driven: 26 vitest tests and 21 pytest tests.
+
+```bash
+npm test          # graph engine, Gemini tool runner, highlight mapping, chat route, prompt
+npm run test:py   # repo URL parsing, safe tar extraction, graph trimming, report parsing
+```
+
+## Configuration
+
+| Variable | Purpose |
+|---|---|
+| `Gemini` / `GEMINI_API_KEY` | Gemini API key (required for chat) |
+| `GEMINI_MODEL` | Optional model override (default `gemini-3.5-flash`) |
+| `GITHUB_TOKEN` | Optional, raises GitHub download rate limits |
+
+Limits: public repos, ≤ 60 MB tarball, ≤ 4000 source files; graphs over 9000 nodes keep code first.
+
+## Project structure
+
+```
+api/graph.py, api/_codemind.py   Python: download → Graphify → trim (Vercel Python Function)
+app/api/chat/route.ts            Gemini streaming endpoint (tool schemas, no server state)
+lib/graph/engine.ts              Graph engine: normalize, search, impact (reverse BFS), path, stats
+lib/ai/graph-tools.ts            Tool schemas + browser-side tool runner
+lib/ai/highlight.ts              Tool results → graph highlight
+components/                      Landing, Workspace, GraphView (force graph + ripple), ChatPanel, NodePanel
+docs/superpowers/                Design spec and implementation plan
+PROMPTS.md                       Full AI prompt history (VibeForge rule §3)
+```
+
+## Disclosure of pre-existing code and resources (VibeForge rule §3)
+
+- **Next.js starter:** scaffolded with `create-next-app` (layout boilerplate, configs). All application code was written during the event.
+- **Graphify** (`graphifyy` on PyPI, Graphify-Labs/graphify): the knowledge-graph engine, used as a dependency and not modified.
+- **Libraries:** Vercel AI SDK + `@ai-sdk/google` (Gemini), `react-force-graph-2d`, `react-markdown`, Tailwind CSS, Zod, Vitest, pytest.
+- **Fonts:** Bricolage Grotesque, IBM Plex Sans, IBM Plex Mono (Google Fonts, OFL).
+- **AI assistance:** built with Claude Code (Anthropic) using the superpowers planning/TDD skills, frontend-design and Vercel deploy skills. Every prompt is in [PROMPTS.md](PROMPTS.md).

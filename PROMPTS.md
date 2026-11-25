@@ -31,3 +31,20 @@ This file records every prompt the team gave the AI coding assistant (Claude Cod
 - Read the rulebook and added requirements from it: keep this prompt history, disclose pre-existing code in the README, and target the "Best Use of Graphify" track.
 - Confirmed that the `graphifyy` package is the Graphify-Labs/graphify project.
 - Planned a deeper Graphify integration: `GRAPH_REPORT.md` god-nodes and suggested questions now feed the chat.
+
+---
+
+## Build log (AI actions between prompts)
+
+The following steps happened inside Prompt 1–2's session. They are recorded so the jury can follow the development process.
+
+| Step | What the AI did | Evidence |
+|---|---|---|
+| Plan | Used `superpowers:writing-plans` to write a spec and a 5-task plan | `docs/superpowers/` |
+| Engine (TDD) | Wrote 13 failing vitest tests, watched them fail, then implemented `GraphEngine` | `lib/graph/engine*.ts` |
+| Graphify function (TDD) | Wrote 19 pytest tests (URL variants, tar path-traversal, trimming, report parsing), then implemented. Ran Graphify end to end on a real codebase: 3,932 nodes in 8.4 s | `api/_codemind.py` |
+| Found & fixed by test | Duplicated "surprising connections" and an uncapped payload (Vercel 4.5 MB limit). Added 2 failing tests, then fixed | `tests/test_codemind.py` |
+| Gemini | Probed the models available to the key: 3.8-flash was overloaded (503) and 2.5-flash is retired for new keys (404), so chose `gemini-3.5-flash`. Designed browser-executed tools so the graph is never uploaded | `app/api/chat/route.ts` |
+| UI | Used `frontend-design`: a "blast radius on a cyanotype" concept, reviewed with Playwright screenshots on desktop and iPhone 13, then fixed headline wrapping, collapsed mobile input, noisy starters and a double focus ring | `components/` |
+| Found & fixed by test | Gemini said "Medium" while the graph computed "high" risk. Added a failing prompt test, then fixed the prompt | `app/api/chat/route.test.ts` |
+| Deploy | Used the `vercel:deploy` skill: Python function for Graphify (300 s, 3 GB), Next.js for UI + chat | `vercel.json` |
