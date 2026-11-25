@@ -84,6 +84,13 @@ npm test          # graph engine, Gemini tool runner, highlight mapping, chat ro
 npm run test:py   # repo URL parsing, safe tar extraction, graph trimming, report parsing
 ```
 
+**AI-down behaviour without spending credit:** every question goes to the AI first. If that request fails (daily limit, bad key, outage), the browser answers from the graph instead, and the next question tries the AI again. To try it locally, run a stand-in for OpenRouter that fails on chosen requests:
+
+```bash
+MOCK_FAIL=3-4 node scripts/mock-openrouter.mjs
+OPENROUTER_API_KEY=test OPENROUTER_BASE_URL=http://127.0.0.1:8787/api/v1 npm run dev
+```
+
 ## Configuration
 
 | Variable | Purpose |

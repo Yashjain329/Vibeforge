@@ -13,6 +13,8 @@ export interface AiConfig {
   provider: "openrouter" | "gemini";
   apiKey: string;
   models: string[];
+  /** only for local testing against a stand-in server */
+  baseURL?: string;
 }
 
 type Env = Record<string, string | undefined>;
@@ -26,7 +28,13 @@ export function resolveAiConfig(env: Env): AiConfig | null {
   const or = orName ? val(env[orName]) : undefined;
   if (or) {
     const list = val(env.OPENROUTER_MODEL)?.split(",").map((s) => s.trim()).filter(Boolean);
-    return { provider: "openrouter", apiKey: or, models: list?.length ? list : DEFAULT_OPENROUTER_MODELS };
+    const baseURL = val(env.OPENROUTER_BASE_URL);
+    return {
+      provider: "openrouter",
+      apiKey: or,
+      models: list?.length ? list : DEFAULT_OPENROUTER_MODELS,
+      ...(baseURL ? { baseURL } : {}),
+    };
   }
   const gem = val(env.Gemini) ?? val(env.GEMINI_API_KEY) ?? val(env.GOOGLE_GENERATIVE_AI_API_KEY);
   if (gem) return { provider: "gemini", apiKey: gem, models: [val(env.GEMINI_MODEL) ?? "gemini-3.5-flash"] };
@@ -35,7 +43,12 @@ export function resolveAiConfig(env: Env): AiConfig | null {
 
 export function createModel(c: AiConfig): LanguageModel {
   if (c.provider === "openrouter") {
-    const openrouter = createOpenRouter({ apiKey: c.apiKey, appName: "CodeMind", appUrl: "https://codemind-henna.vercel.app" });
+    const openrouter = createOpenRouter({
+      apiKey: c.apiKey,
+      appName: "CodeMind",
+      appUrl: "https://codemind-henna.vercel.app",
+      ...(c.baseURL ? { baseURL: c.baseURL } : {}),
+    });
     const [primary, ...fallbacks] = c.models;
     return openrouter.chat(primary, fallbacks.length ? { models: c.models } : {});
   }

@@ -130,6 +130,18 @@ This file records every prompt the team gave the AI coding assistant (Claude Cod
 - Found the new Vercel variable was named `Openrouter` (lowercase r). Made the key lookup case-insensitive, test-first.
 - Added `GET /api/chat`, which reports the configured provider without exposing the key or calling the model, so a deployment can be checked for free.
 
+## Prompt 11 — AI first, raw impact only as fallback
+
+> make sure that until the key is there it answer using it and then it shifts to the raw impact
+
+**AI actions:**
+- Confirmed every question tries the AI first and falls back only when that request fails.
+- Closed a gap: graph-only answers are now left out of the history sent to the AI (`lib/ai/history.ts`, 2 tests), so chat goes straight back to the AI once it's available again.
+- Added `scripts/mock-openrouter.mjs`, a local stand-in for OpenRouter's streaming API that can return the real daily-limit error on chosen requests, plus an `OPENROUTER_BASE_URL` override for testing. No credit used.
+- Verified in the browser:
+  - Limit between questions: Q1 AI → Q2 raw impact → Q3 AI.
+  - Limit mid-answer: the graph answer replaced the half-finished reply, then the AI handled the next questions.
+
 ---
 
 ## Build log (AI actions between prompts)

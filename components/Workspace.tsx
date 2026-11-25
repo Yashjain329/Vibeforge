@@ -11,6 +11,7 @@ import {
 import { useMemo, useState } from "react";
 import { runGraphTool } from "@/lib/ai/graph-tools";
 import { graphOnlyAnswer, isAiUnavailable } from "@/lib/ai/graph-answer";
+import { forModel, GRAPH_ANSWER_PREFIX, isGraphAnswer } from "@/lib/ai/history";
 import { emptyHighlight, highlightFromToolOutputs, type Highlight } from "@/lib/ai/highlight";
 import type { ChatContext } from "@/lib/ai/prompt";
 import type { AnalyzeResult } from "@/lib/client/analyze";
@@ -99,6 +100,10 @@ export default function Workspace({
       new DefaultChatTransport({
         api: "/api/chat",
         body: { context: { repo: result.repo, stats, report: result.report } satisfies ChatContext },
+        // graph-only answers stay on screen but are never sent to the AI, so it answers fresh once available again
+        prepareSendMessagesRequest: ({ id, messages, body, trigger, messageId }) => ({
+          body: { ...body, id, trigger, messageId, messages: forModel(messages) },
+        }),
       }),
   );
 
@@ -113,11 +118,11 @@ export default function Workspace({
         const ans = graphOnlyAnswer(engine, question);
         const parts = [
           ...(ans.tool
-            ? [{ type: `tool-${ans.tool.name}`, toolCallId: `graph-${Date.now()}`, state: "output-available", input: ans.tool.input, output: ans.tool.output }]
+            ? [{ type: `tool-${ans.tool.name}`, toolCallId: `${GRAPH_ANSWER_PREFIX}${Date.now()}`, state: "output-available", input: ans.tool.input, output: ans.tool.output }]
             : []),
           { type: "text", text: ans.text },
         ];
-        return [...all.slice(0, lastUser + 1), { id: `graph-${Date.now()}`, role: "assistant", parts } as never];
+        return [...all.slice(0, lastUser + 1), { id: `${GRAPH_ANSWER_PREFIX}${Date.now()}`, role: "assistant", parts } as never];
       });
       clearError();
     },
@@ -301,7 +306,7 @@ export default function Workspace({
           <ChatPanel
             messages={messages}
             status={status}
-            error={messages.at(-1)?.id.startsWith("graph-") ? undefined : error}
+            error={messages.length && isGraphAnswer(messages[messages.length - 1]) ? undefined : error}
             starters={starters}
             onSend={ask}
             onRetry={() => void regenerate()}
