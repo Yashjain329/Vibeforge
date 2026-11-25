@@ -10,6 +10,7 @@ import {
 } from "ai";
 import { useMemo, useState } from "react";
 import { runGraphTool } from "@/lib/ai/graph-tools";
+import { graphOnlyAnswer, isAiUnavailable } from "@/lib/ai/graph-answer";
 import { emptyHighlight, highlightFromToolOutputs, type Highlight } from "@/lib/ai/highlight";
 import type { ChatContext } from "@/lib/ai/prompt";
 import type { AnalyzeResult } from "@/lib/client/analyze";
@@ -101,7 +102,25 @@ export default function Workspace({
       }),
   );
 
-  const { messages, sendMessage, status, error, regenerate, addToolOutput } = useChat({
+  const { messages, sendMessage, status, error, regenerate, addToolOutput, setMessages, clearError } = useChat({
+    // AI unavailable (daily limit, rate limit, no key): answer from the graph instead of failing
+    onError(err) {
+      if (!isAiUnavailable(err.message)) return;
+      setMessages((all) => {
+        const lastUser = all.map((m) => m.role).lastIndexOf("user");
+        if (lastUser < 0) return all;
+        const question = all[lastUser].parts.map((p) => (p.type === "text" ? p.text : "")).join("");
+        const ans = graphOnlyAnswer(engine, question);
+        const parts = [
+          ...(ans.tool
+            ? [{ type: `tool-${ans.tool.name}`, toolCallId: `graph-${Date.now()}`, state: "output-available", input: ans.tool.input, output: ans.tool.output }]
+            : []),
+          { type: "text", text: ans.text },
+        ];
+        return [...all.slice(0, lastUser + 1), { id: `graph-${Date.now()}`, role: "assistant", parts } as never];
+      });
+      clearError();
+    },
     transport,
     sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
     // Gemini asks; the browser answers from the Graphify graph it already holds.
@@ -282,7 +301,7 @@ export default function Workspace({
           <ChatPanel
             messages={messages}
             status={status}
-            error={error}
+            error={messages.at(-1)?.id.startsWith("graph-") ? undefined : error}
             starters={starters}
             onSend={ask}
             onRetry={() => void regenerate()}

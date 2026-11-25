@@ -27,6 +27,8 @@ export async function POST(req: Request) {
     messages: await convertToModelMessages(body.messages),
     tools: graphToolSchemas,
     providerOptions: providerOptions(ai),
+    // a daily quota won't clear on retry; fail fast so the browser can answer from the graph
+    maxRetries: 1,
   });
 
   return createUIMessageStreamResponse({

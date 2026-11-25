@@ -109,6 +109,25 @@ This file records every prompt the team gave the AI coding assistant (Claude Cod
   - A chat answer streamed through OpenRouter and "Share report" opened the report page.
   - The tour returned AI narration in 7.9 s.
 
+## Prompt 9 — Free-tier limit hit mid-answer
+
+> The AI didn't finish this answer: Failed after 3 attempts. Last error: AI_APICallError: Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day: https://openrouter.ai/settings/credits?utm_source=api&utm_campaign=free_daily_limit
+>
+> But it wasn't even able to provide me a full answer
+
+## Prompt 10 — New key, no credit for testing
+
+> I have changed the API key in vercel for open router so don't use the credit for testing this time
+
+**AI actions (prompts 9–10):**
+- Explained the 50-requests/day free cap; testing earlier that day had used about 25 of them.
+- Built a graph-only fallback test-first: `lib/ai/graph-answer.ts`, with 5 tests.
+  - If the AI fails for any reason (quota, rate limit, bad key, outage), CodeMind runs the impact analysis itself and writes the answer from the graph.
+  - The graph highlight and "Share report" still work, and the stale error box is hidden.
+  - Question names are matched case- and separator-blind, so `parseRepo` finds `parse_repo()`.
+- The server now retries once instead of three times, since a daily quota won't clear on retry.
+- Respected the no-credit request: tested only against the old, now-rejected key, which costs nothing, and made no AI calls against production.
+
 ---
 
 ## Build log (AI actions between prompts)
