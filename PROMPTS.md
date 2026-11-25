@@ -127,6 +127,8 @@ This file records every prompt the team gave the AI coding assistant (Claude Cod
   - Question names are matched case- and separator-blind, so `parseRepo` finds `parse_repo()`.
 - The server now retries once instead of three times, since a daily quota won't clear on retry.
 - Respected the no-credit request: tested only against the old, now-rejected key, which costs nothing, and made no AI calls against production.
+- Found the new Vercel variable was named `Openrouter` (lowercase r). Made the key lookup case-insensitive, test-first.
+- Added `GET /api/chat`, which reports the configured provider without exposing the key or calling the model, so a deployment can be checked for free.
 
 ---
 

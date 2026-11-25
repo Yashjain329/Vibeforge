@@ -13,6 +13,12 @@ describe("resolveAiConfig", () => {
     expect(resolveAiConfig({ OpenRouter: "or2", Gemini: "g" })).toMatchObject({ provider: "openrouter", apiKey: "or2" });
   });
 
+  it("finds the key whatever its capitalisation (Openrouter, openrouter_api_key)", () => {
+    expect(resolveAiConfig({ Openrouter: "k1" })).toMatchObject({ provider: "openrouter", apiKey: "k1" });
+    expect(resolveAiConfig({ openrouter_api_key: "k2" })).toMatchObject({ provider: "openrouter", apiKey: "k2" });
+    expect(resolveAiConfig({ OPENROUTER_MODEL: "a/b" })).toBeNull();
+  });
+
   it("reads a comma-separated OPENROUTER_MODEL list (first = primary)", () => {
     const c = resolveAiConfig({ OPENROUTER_API_KEY: "or", OPENROUTER_MODEL: " a/b , c/d " });
     expect(c).toMatchObject({ provider: "openrouter", models: ["a/b", "c/d"] });

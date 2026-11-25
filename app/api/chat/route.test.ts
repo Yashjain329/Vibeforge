@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { POST } from "./route";
+import { GET, POST } from "./route";
 import { buildSystemPrompt } from "@/lib/ai/prompt";
 
 afterEach(() => vi.unstubAllEnvs());
@@ -18,6 +18,15 @@ describe("POST /api/chat", () => {
     vi.stubEnv("Gemini", "k");
     const res = await POST(new Request("http://x/api/chat", { method: "POST", body: "nope" }));
     expect(res.status).toBe(400);
+  });
+});
+
+describe("GET /api/chat (status)", () => {
+  it("reports the configured provider without exposing the key", async () => {
+    vi.stubEnv("Openrouter", "secret-key");
+    const body = await (await GET()).json();
+    expect(body.provider).toBe("openrouter");
+    expect(JSON.stringify(body)).not.toContain("secret-key");
   });
 });
 

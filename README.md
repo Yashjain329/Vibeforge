@@ -88,7 +88,7 @@ npm run test:py   # repo URL parsing, safe tar extraction, graph trimming, repor
 
 | Variable | Purpose |
 |---|---|
-| `OPENROUTER_API_KEY` or `OpenRouter` | OpenRouter key: preferred chat provider |
+| `OPENROUTER_API_KEY` (any capitalisation, or just `OpenRouter`) | OpenRouter key: preferred chat provider. `GET /api/chat` shows which provider a deployment uses, without spending a request |
 | `OPENROUTER_MODEL` | Optional comma-separated model list; the first is primary and the rest are automatic fallbacks (default: free Nemotron 3 Ultra → Nemotron 3.5 Super → Gemma 4 31B) |
 | `Gemini` / `GEMINI_API_KEY` | Gemini key, used only when no OpenRouter key is set |
 | `GEMINI_MODEL` | Optional Gemini model (default `gemini-3.5-flash`) |

@@ -21,7 +21,9 @@ const val = (v: string | undefined) => (v && v.trim() ? v.trim() : undefined);
 
 /** Pick the AI provider from the environment: OpenRouter if configured, else Gemini, else null. */
 export function resolveAiConfig(env: Env): AiConfig | null {
-  const or = val(env.OPENROUTER_API_KEY) ?? val(env.OpenRouter);
+  // the key's name is matched case-insensitively: OPENROUTER_API_KEY, OpenRouter, Openrouter, …
+  const orName = Object.keys(env).find((k) => /^openrouter(_api_key)?$/i.test(k) && val(env[k]));
+  const or = orName ? val(env[orName]) : undefined;
   if (or) {
     const list = val(env.OPENROUTER_MODEL)?.split(",").map((s) => s.trim()).filter(Boolean);
     return { provider: "openrouter", apiKey: or, models: list?.length ? list : DEFAULT_OPENROUTER_MODELS };

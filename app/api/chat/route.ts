@@ -35,3 +35,9 @@ export async function POST(req: Request) {
     stream: toUIMessageStream({ stream: result.stream, onError: (e) => (e instanceof Error ? e.message : String(e)) }),
   });
 }
+
+/** Which AI provider is configured: lets you check a deployment without spending a model request. */
+export function GET() {
+  const ai = resolveAiConfig(process.env);
+  return Response.json({ provider: ai?.provider ?? null, models: ai?.models ?? [] });
+}
