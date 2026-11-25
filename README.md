@@ -11,6 +11,8 @@ Built for **VibeForge 2026** (Open Innovation, Graphify track).
 
 **Live demo: https://codemind-henna.vercel.app**: paste any public GitHub repo, or open a prebuilt graph.
 
+**Presentation:** an 11-slide pitch deck with speaker notes: https://claude.ai/artifact/7ojMCcruwUxKSNz1NEnxRd
+
 ![CodeMind on the live site: "What happens if I change the Signer class?" in pallets/itsdangerous](docs/screenshot-production.png)
 
 ## Features
