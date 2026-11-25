@@ -19,7 +19,13 @@ export default function BranchSelect({
   if (state.status === "loading")
     return <span className={`text-faded ${compact ? "text-xs" : "text-sm"}`}>Loading branches…</span>;
   if (state.status === "error")
-    return <span className={`text-[#FFD1CE] ${compact ? "text-xs" : "text-sm"}`}>{state.error}</span>;
+    return compact ? (
+      <span className="text-xs text-faded" title={state.error}>
+        Branches unavailable
+      </span>
+    ) : (
+      <span className="text-sm text-[#FFD1CE]">{state.error}</span>
+    );
   if (state.status !== "ready") return null;
   const { list } = state;
   const current = value ?? list.defaultBranch;

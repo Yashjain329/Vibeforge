@@ -21,6 +21,8 @@ import NodePanel from "./NodePanel";
 import BranchSelect from "./BranchSelect";
 import { useBranches } from "@/lib/client/useBranches";
 import { buildReport, encodeReport } from "@/lib/report/report";
+import { fallbackTour, summarizeCommunities, tourHighlight, type Tour } from "@/lib/tour/tour";
+import TourPanel from "./TourPanel";
 import { parseRepo, repoRef } from "@/lib/github/branches";
 
 function highlightOf(m: UIMessage): Highlight {
@@ -113,7 +115,44 @@ export default function Workspace({
   // a pinned older answer stays shown until a newer graph-backed answer arrives
   const activeId = (pin && pin.latest === lastWithGraph?.id ? pin.id : lastWithGraph?.id) ?? null;
   const active = messages.find((m) => m.id === activeId);
-  const highlight = useMemo(() => (active ? highlightOf(active) : emptyHighlight()), [active]);
+  const chatHighlight = useMemo(() => (active ? highlightOf(active) : emptyHighlight()), [active]);
+
+  const communities = useMemo(() => summarizeCommunities(engine), [engine]);
+  const [tour, setTour] = useState<
+    | { status: "idle" }
+    | { status: "active"; tour: Tour; step: number; source: "ai" | "graph"; pending: boolean }
+  >({ status: "idle" });
+  const startTour = async () => {
+    setSelected(null);
+    setTab("graph");
+    // start instantly with the graph-built tour; swap in AI narration when it arrives
+    setTour({ status: "active", tour: fallbackTour(result.repo.split("@")[0], communities), step: 0, source: "graph", pending: true });
+    let next: { tour: Tour; source: "ai" | "graph" } | null = null;
+    try {
+      const res = await fetch("/api/tour", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ repo: result.repo, communities: communities.map(({ nodeIds, hubId, ...c }) => (void nodeIds, void hubId, c)) }),
+      });
+      const body = await res.json();
+      if (res.ok && body.source === "ai") next = body;
+    } catch {
+      /* keep the graph tour */
+    }
+    setTour((cur) => {
+      if (cur.status !== "active") return cur;
+      if (!next) return { ...cur, pending: false };
+      const here = cur.tour.steps[cur.step]?.communityId;
+      const idx = next.tour.steps.findIndex((st) => st.communityId === here);
+      return { status: "active", tour: next.tour, step: cur.step === 0 ? 0 : Math.max(0, idx), source: "ai", pending: false };
+    });
+  };
+  const tourStop =
+    tour.status === "active" ? communities.find((c) => c.id === tour.tour.steps[tour.step]?.communityId) : undefined;
+  const highlight = useMemo(
+    () => (tourStop ? tourHighlight(tourStop, engine) : chatHighlight),
+    [tourStop, engine, chatHighlight],
+  );
 
   const ask = (text: string) => {
     setTab("chat");
@@ -162,7 +201,16 @@ export default function Workspace({
           <div className="flex gap-1"><dt>Edges</dt><dd className="text-paper">{stats.links.toLocaleString()}</dd></div>
           <div className="flex gap-1"><dt>Communities</dt><dd className="text-paper">{stats.communities}</dd></div>
         </dl>
-        <button onClick={onReset} className="ml-auto rounded-md border border-paper/20 px-3 py-1 text-sm hover:border-ripple-1">
+        {communities.length > 1 && (
+          <button
+            onClick={startTour}
+            disabled={tour.status === "active"}
+            className="ml-auto rounded-md bg-ripple-1/15 px-3 py-1 text-sm text-ripple-2 hover:bg-ripple-1/25 disabled:opacity-60"
+          >
+            Architecture tour
+          </button>
+        )}
+        <button onClick={onReset} className={`${communities.length > 1 ? "" : "ml-auto "}rounded-md border border-paper/20 px-3 py-1 text-sm hover:border-ripple-1`}>
           Map another repo
         </button>
       </header>
@@ -199,9 +247,22 @@ export default function Workspace({
             showDocs={showDocs}
           />
           {result.truncated && (
-            <p className="absolute left-3 top-3 rounded bg-ink/85 px-2.5 py-1 text-xs text-ripple-3">
+            <p className="absolute right-3 top-3 rounded bg-ink/85 px-2.5 py-1 text-xs text-ripple-3">
               Large repo: showing the {stats.nodes.toLocaleString()} most important nodes.
             </p>
+          )}
+          {tour.status === "active" && (
+            <div className="pointer-events-none absolute left-3 top-3 z-10">
+              <TourPanel
+                tour={tour.tour}
+                step={tour.step}
+                communities={communities}
+                source={tour.source}
+                pending={tour.pending}
+                onStep={(i) => setTour({ ...tour, step: Math.max(0, Math.min(i, tour.tour.steps.length - 1)) })}
+                onEnd={() => setTour({ status: "idle" })}
+              />
+            </div>
           )}
           <div className="pointer-events-none absolute inset-x-3 bottom-3 flex flex-col items-start gap-2">
             {selected && (
