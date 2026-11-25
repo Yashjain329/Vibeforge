@@ -98,6 +98,17 @@ This file records every prompt the team gave the AI coding assistant (Claude Cod
 - **#5 Presentation deck:** an 11-slide pitch deck built as a Slides artifact in CodeMind's visual style, with real screenshots and speaker notes.
 - Deployed to production.
 
+## Prompt 8 — OpenRouter key on Vercel
+
+> Added the Openrouter key on Vercel
+
+**AI actions:**
+- Checked the Vercel project's env vars and found the key had been added under the name `OpenRouter`, not `OPENROUTER_API_KEY`.
+- Added a failing test, then made `resolveAiConfig()` accept both names.
+- Redeployed and verified on production:
+  - A chat answer streamed through OpenRouter and "Share report" opened the report page.
+  - The tour returned AI narration in 7.9 s.
+
 ---
 
 ## Build log (AI actions between prompts)
