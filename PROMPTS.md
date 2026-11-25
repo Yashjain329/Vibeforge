@@ -78,6 +78,26 @@ This file records every prompt the team gave the AI coding assistant (Claude Cod
   - Switching from the header re-mapped `main`.
 - Suggested next features: branch-diff impact, PR review, a shareable report, and an architecture tour.
 
+## Prompt 7 — Reports, tour, deck, OpenRouter
+
+> Build 3 and 4 and also  5 after 3 and 4  and also can we change the API key to openrouter as they current gemini one has reached it's limit
+
+**AI actions:**
+- **OpenRouter:**
+  - Collected the key through the secure credential form and found it is a free-tier key (50 free-model requests a day).
+  - Tested free models for tool calling. Nemotron 3 Ultra passed in 2.9 s; two others were rate-limited upstream.
+  - Built `resolveAiConfig()` test-first: OpenRouter is preferred, with free-model fallbacks, and Gemini is the backup.
+- **#3 Shareable impact report:**
+  - `lib/report/report.ts` (build, gzip+base64url encode/decode, radial blast-radius layout) with 6 tests.
+  - A `/report` page with Copy link and Save as PDF (print stylesheet), and a "Share report" button on every answer.
+  - Verified in the browser, including print mode.
+- **#4 Architecture tour:**
+  - `lib/tour/tour.ts` (community summaries, AI-output parsing, graph-only fallback, highlight) with 6 tests, and `/api/tour` with 2 tests.
+  - The tour panel steps through Graphify communities, highlighting each.
+  - The free model took 89 s, so the tour now starts instantly from graph data and swaps in AI narration when it arrives.
+- **#5 Presentation deck:** an 11-slide pitch deck built as a Slides artifact in CodeMind's visual style, with real screenshots and speaker notes.
+- Deployed to production.
+
 ---
 
 ## Build log (AI actions between prompts)

@@ -18,6 +18,8 @@ Built for **VibeForge 2026** (Open Innovation, Graphify track).
 - **Any public repo, any branch:** paste a URL, pick a branch from the list (default first), and switch branches from the workspace header.
 - **Change-impact chat:** Gemini answers "what if I change X" with a risk level, the dependents and what to test.
 - **Blast-radius graph:** the changed node in red with ripple rings, and dependents amber by hop distance.
+- **Shareable impact reports:** one click turns an answer into a printable page (risk, blast-radius ring diagram, analysis, files). The whole report is compressed into the link, with no database.
+- **Architecture tour:** a guided walk through Graphify's communities, each one highlighted on the graph and narrated by AI (it starts instantly from graph data).
 - **Node inspector:** click any node to see who uses it, what it uses and its blast radius, then ask about it in one click.
 - **Prebuilt demos:** CodeMind's own graph and Graphify's, built by Graphify.
 
