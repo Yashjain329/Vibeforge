@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { DEMOS } from "@/lib/client/analyze";
+import { useBranches } from "@/lib/client/useBranches";
+import { parseRepo, repoRef } from "@/lib/github/branches";
+import BranchSelect from "./BranchSelect";
 
 /** A tiny static constellation with one ripple: the product's idea in one picture. */
 function RippleMark() {
@@ -47,6 +50,8 @@ export default function Landing({
   error: string | null;
 }) {
   const [repo, setRepo] = useState("");
+  const [branch, setBranch] = useState<string | undefined>(undefined);
+  const branches = useBranches(repo);
 
   return (
     <main className="blueprint min-h-full">
@@ -79,7 +84,11 @@ export default function Landing({
               className="mt-9 max-w-[36rem]"
               onSubmit={(e) => {
                 e.preventDefault();
-                if (repo.trim()) onAnalyze(repo.trim());
+                const id = parseRepo(repo);
+                if (!id) return onAnalyze(repo.trim());
+                const def = branches.status === "ready" ? branches.list.defaultBranch : undefined;
+                const ref = branch ?? id.ref;
+                onAnalyze(repoRef(id.owner, id.repo, ref && ref !== def ? ref : undefined));
               }}
             >
               <label htmlFor="repo" className="mb-2 block text-sm text-faded">
@@ -89,7 +98,10 @@ export default function Landing({
                 <input
                   id="repo"
                   value={repo}
-                  onChange={(e) => setRepo(e.target.value)}
+                  onChange={(e) => {
+                    setRepo(e.target.value);
+                    setBranch(parseRepo(e.target.value)?.ref);
+                  }}
                   placeholder="github.com/owner/repo"
                   autoComplete="off"
                   spellCheck={false}
@@ -102,6 +114,9 @@ export default function Landing({
                 >
                   Map repository
                 </button>
+              </div>
+              <div className="mt-2.5 min-h-8">
+                <BranchSelect id="branch" state={branches} value={branch} onChange={setBranch} />
               </div>
               {error && (
                 <p role="alert" className="mt-3 rounded-md border border-signal/50 bg-signal/10 px-3 py-2 text-sm text-[#FFD1CE]">

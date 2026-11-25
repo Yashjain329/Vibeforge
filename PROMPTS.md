@@ -63,6 +63,21 @@ This file records every prompt the team gave the AI coding assistant (Claude Cod
   - A browser end-to-end run had Gemini trace 45 dependents of `Signer`, with "high" risk shown both in chat and on the graph.
 - Fixed a double focus outline on the chat box, which a global CSS rule was causing.
 
+## Prompt 6 — Branches + ideas
+
+> What if I want to see branches of a repo can we have that as well and also what else do you think we can add to the project for now
+
+**AI actions:**
+- Built the branch feature test-first:
+  - `lib/github/branches.ts` (parse repo, list branches with the default first, rate-limit/404 errors) with 14 vitest tests.
+  - `/api/branches` route with a 400-on-bad-input test.
+  - Branch picker on the landing page, a branch switcher in the workspace header, and an error banner if a switch fails.
+- Deployed and verified on production with `pallets/itsdangerous`:
+  - The picker listed `main (default)` and `stable`.
+  - Mapping `stable` produced a different graph from `main` (325 vs 323 nodes).
+  - Switching from the header re-mapped `main`.
+- Suggested next features: branch-diff impact, PR review, a shareable report, and an architecture tour.
+
 ---
 
 ## Build log (AI actions between prompts)

@@ -72,11 +72,22 @@ export default function CodeMindApp() {
   };
 
   if (building) return <Building repo={building} onCancel={() => abort.current?.abort()} />;
-  if (result) return <Workspace key={result.repo} result={result} onReset={() => setResult(null)} />;
+  const analyze = (repo: string) => run(repo, (signal) => analyzeRepo(repo, signal));
+  if (result)
+    return (
+      <Workspace
+        key={result.repo}
+        result={result}
+        onReset={() => setResult(null)}
+        onAnalyze={analyze}
+        notice={error}
+        onDismissNotice={() => setError(null)}
+      />
+    );
   return (
     <Landing
       error={error}
-      onAnalyze={(repo) => run(repo, (signal) => analyzeRepo(repo, signal))}
+      onAnalyze={analyze}
       onDemo={(id) => run(id === "codemind" ? "CodeMind (this app)" : "Graphify-Labs/graphify", () => loadDemo(id))}
     />
   );

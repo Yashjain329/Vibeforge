@@ -18,6 +18,9 @@ import type { CMNode } from "@/lib/graph/types";
 import ChatPanel from "./ChatPanel";
 import GraphView from "./GraphView";
 import NodePanel from "./NodePanel";
+import BranchSelect from "./BranchSelect";
+import { useBranches } from "@/lib/client/useBranches";
+import { parseRepo, repoRef } from "@/lib/github/branches";
 
 function highlightOf(m: UIMessage): Highlight {
   return highlightFromToolOutputs(
@@ -57,7 +60,28 @@ function Legend({ hasDocs, showDocs, setShowDocs }: { hasDocs: boolean; showDocs
   );
 }
 
-export default function Workspace({ result, onReset }: { result: AnalyzeResult; onReset: () => void }) {
+/** "owner/repo@branch" (from /api/graph) → parts; demos have no GitHub identity. */
+function repoParts(name: string) {
+  const [base, ref] = name.split("@");
+  const id = parseRepo(base);
+  return id ? { owner: id.owner, repo: id.repo, ref } : null;
+}
+
+export default function Workspace({
+  result,
+  onReset,
+  onAnalyze,
+  notice,
+  onDismissNotice,
+}: {
+  result: AnalyzeResult;
+  onReset: () => void;
+  onAnalyze: (repo: string) => void;
+  notice?: string | null;
+  onDismissNotice?: () => void;
+}) {
+  const parts = repoParts(result.repo);
+  const branches = useBranches(parts ? `${parts.owner}/${parts.repo}` : "");
   const engine = useMemo(() => new GraphEngine(result.graph), [result]);
   const stats = useMemo(() => engine.stats(), [engine]);
   const [selected, setSelected] = useState<CMNode | null>(null);
@@ -118,7 +142,19 @@ export default function Workspace({ result, onReset }: { result: AnalyzeResult; 
         <button onClick={onReset} className="font-display text-lg font-extrabold tracking-tight hover:text-ripple-2">
           CodeMind
         </button>
-        <span className="min-w-0 truncate font-mono text-sm text-paper">{result.repo}</span>
+        <span className="min-w-0 truncate font-mono text-sm text-paper">{result.repo.split("@")[0]}</span>
+        {parts && (
+          <BranchSelect
+            id="ws-branch"
+            compact
+            state={branches}
+            value={parts.ref}
+            onChange={(b) => {
+              const def = branches.status === "ready" ? branches.list.defaultBranch : undefined;
+              onAnalyze(repoRef(parts.owner, parts.repo, b === def ? undefined : b));
+            }}
+          />
+        )}
         <dl className="hidden items-center gap-4 text-xs text-faded md:flex">
           <div className="flex gap-1"><dt>Files</dt><dd className="text-paper">{stats.files.toLocaleString()}</dd></div>
           <div className="flex gap-1"><dt>Nodes</dt><dd className="text-paper">{stats.nodes.toLocaleString()}</dd></div>
@@ -130,6 +166,14 @@ export default function Workspace({ result, onReset }: { result: AnalyzeResult; 
         </button>
       </header>
 
+      {notice && (
+        <div role="alert" className="flex items-center gap-3 border-b border-signal/40 bg-signal/10 px-4 py-2 text-sm text-[#FFD1CE]">
+          <span className="min-w-0 flex-1">Couldn&apos;t switch branch: {notice}</span>
+          <button onClick={onDismissNotice} className="text-paper underline underline-offset-4">
+            Dismiss
+          </button>
+        </div>
+      )}
       <div className="flex border-b border-paper/10 bg-ink md:hidden" role="tablist">
         {(["graph", "chat"] as const).map((t) => (
           <button
