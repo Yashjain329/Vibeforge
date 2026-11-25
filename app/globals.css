@@ -89,3 +89,15 @@ body {
 }
 
 .scroll-thin { scrollbar-width: thin; scrollbar-color: rgb(126 156 188 / 0.4) transparent; }
+
+/* printable report: paper-white sheet, ink text */
+@media print {
+  html, body { background: #fff !important; color: #0a2540 !important; }
+  .report-page { background: #fff !important; padding: 0 !important; }
+  .report-sheet { background: #fff !important; color: #0a2540 !important; border: none !important; box-shadow: none !important; max-width: none !important; }
+  .report-sheet * { color: #0a2540 !important; border-color: #c9d6e3 !important; }
+  .report-sheet .answer code { background: #eef3f8 !important; }
+  .report-sheet dl > div, .report-files li { background: #f3f6fa !important; }
+  .report-diagram text { fill: #0a2540 !important; }
+  .report-actions { display: none !important; }
+}

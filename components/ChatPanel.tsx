@@ -51,6 +51,7 @@ export default function ChatPanel({
   onSend,
   onRetry,
   onShowMessage,
+  onShare,
   activeMessageId,
 }: {
   messages: UIMessage[];
@@ -60,6 +61,7 @@ export default function ChatPanel({
   onSend: (text: string) => void;
   onRetry: () => void;
   onShowMessage: (m: UIMessage) => void;
+  onShare: (m: UIMessage) => void;
   activeMessageId: string | null;
 }) {
   const [input, setInput] = useState("");
@@ -141,16 +143,23 @@ export default function ChatPanel({
                     ) : null,
                   )}
                 </div>
-                {hasGraph && (
-                  <button
-                    onClick={() => onShowMessage(m)}
-                    className={`mt-2 rounded px-2 py-1 text-xs transition-colors ${
-                      activeMessageId === m.id ? "bg-ripple-1/15 text-ripple-2" : "text-faded hover:text-paper"
-                    }`}
-                  >
-                    {activeMessageId === m.id ? "Shown on graph" : "Show on graph"}
-                  </button>
-                )}
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {hasGraph && (
+                    <button
+                      onClick={() => onShowMessage(m)}
+                      className={`rounded px-2 py-1 text-xs transition-colors ${
+                        activeMessageId === m.id ? "bg-ripple-1/15 text-ripple-2" : "text-faded hover:text-paper"
+                      }`}
+                    >
+                      {activeMessageId === m.id ? "Shown on graph" : "Show on graph"}
+                    </button>
+                  )}
+                  {m.parts.some((p) => p.type === "text" && p.text.trim()) && !(busy && m.id === messages[messages.length - 1]?.id) && (
+                    <button onClick={() => onShare(m)} className="rounded px-2 py-1 text-xs text-faded transition-colors hover:text-paper">
+                      Share report
+                    </button>
+                  )}
+                </div>
               </li>
             );
           })}

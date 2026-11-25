@@ -20,6 +20,7 @@ import GraphView from "./GraphView";
 import NodePanel from "./NodePanel";
 import BranchSelect from "./BranchSelect";
 import { useBranches } from "@/lib/client/useBranches";
+import { buildReport, encodeReport } from "@/lib/report/report";
 import { parseRepo, repoRef } from "@/lib/github/branches";
 
 function highlightOf(m: UIMessage): Highlight {
@@ -224,6 +225,18 @@ export default function Workspace({
             starters={starters}
             onSend={ask}
             onRetry={() => void regenerate()}
+            onShare={async (m) => {
+              const i = messages.findIndex((x) => x.id === m.id);
+              const q = [...messages.slice(0, i)].reverse().find((x) => x.role === "user");
+              const question = q?.parts.map((p) => (p.type === "text" ? p.text : "")).join("") ?? "";
+              // open the tab synchronously (popup blockers), then fill in the URL
+              const win = window.open("", "_blank");
+              const report = buildReport({ repo: result.repo, question, parts: m.parts as never });
+              const url = `${window.location.origin}/report#r=${await encodeReport(report)}`;
+              navigator.clipboard?.writeText(url).catch(() => {});
+              if (win) win.location.assign(url);
+              else window.open(url, "_self");
+            }}
             onShowMessage={(m) => {
               setPin({ id: m.id, latest: lastWithGraph?.id });
               setTab("graph");
